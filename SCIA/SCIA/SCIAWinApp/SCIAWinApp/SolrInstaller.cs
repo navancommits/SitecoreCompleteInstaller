@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -56,7 +57,6 @@ namespace SCIA
             string solrRoot = txtSolrRoot.Text + @"\" + txtSolrPrefix.Text + txtSolrVersion.Text;
             using var file = new StreamWriter(path);
 
-
             file.WriteLine("{");
             file.WriteLine("    \"Parameters\": {");
             file.WriteLine("        \"SolrVersion\": {");
@@ -88,7 +88,7 @@ namespace SCIA
             file.WriteLine("        \"SolrSourceURL\": {");
             file.WriteLine("            \"Type\": \"String\",");
             file.WriteLine("            \"Description\" : \"Solr download archive location\",");
-            file.WriteLine("            \"DefaultValue\" : \"http://archive.apache.org/dist/lucene/solr\"");
+            file.WriteLine("            \"DefaultValue\" : \"" + txtSolrSrc.Text + "\"");
             file.WriteLine("        },");
             file.WriteLine("        \"SolrCloud\": {");
             file.WriteLine("            \"Type\": \"Switch\",");
@@ -127,9 +127,17 @@ namespace SCIA
             file.WriteLine("        \"Solr.Path\": [");
             file.WriteLine("            \"[parameter('SolrSourceURL')]\",");
             file.WriteLine("            \"[parameter('SolrVersion')]\",");
-            file.WriteLine("            \"[concat(variable('Solr.FileName'),'.zip')]\"");
+            if (txtSolrVersion.Text.Substring(0, 1) == "9")
+            {
+                file.WriteLine("            \"[concat(variable('Solr.FileName'),'.tgz')]\"");
+            }
+            else
+            {
+                file.WriteLine("            \"[concat(variable('Solr.FileName'),'.zip')]\"");
+            }
             file.WriteLine("        ],");
             file.WriteLine("        \"Solr.FileName\": \"[concat('solr-',parameter('SolrVersion'))]\",");
+            file.WriteLine("        \"Solr.tar\": \"solr.tar\",");
             file.WriteLine("        \"Solr.Service\": \"[concat(parameter('SolrServicePrefix'),variable('Solr.FileName'))]\",");
             file.WriteLine("        \"Solr.Uri\": \"[concat('https://',parameter('SolrDomain'),':',parameter('SolrPort'))]\",");
             file.WriteLine("        \"Solr.Install.Path\": \"[JoinPath(parameter('SolrInstallRoot'),variable('Solr.Service'))]\",");
@@ -151,7 +159,15 @@ namespace SCIA
             file.WriteLine("        \"Solr.StartupType\": \"[if(parameter('SolrCloud'),'solrcloud','')]\",");
             file.WriteLine("        \"Java.Download.Temp\": \"[JoinPath(variable('Temp.Location'),'java.zip')]\",");
             file.WriteLine("        \"ACD.Download.Temp\": \"[JoinPath(variable('Temp.Location'),'ACD.zip')]\",");
-            file.WriteLine("        \"Solr.Download.Temp\" : \"[JoinPath(variable('Temp.Location'),'solr.zip')]\",");
+            if (txtSolrVersion.Text.Substring(0, 1) == "9")
+            {
+                file.WriteLine("        \"Solr.Download.Temp\" : \"[JoinPath(variable('Temp.Location'),'solr.tgz')]\",");
+            }
+            else
+            {
+                file.WriteLine("        \"Solr.Download.Temp\" : \"[JoinPath(variable('Temp.Location'),'solr.zip')]\",");
+            }
+            
             file.WriteLine("        \"KeyStoreFilePath\": \"[JoinPath(variable('Solr.Install.Path'),'server','etc')]\",");
             file.WriteLine("        \"KeyStoreFile\": \"solr-ssl.keystore\",");
             file.WriteLine("        \"Secure.Solr.Key.Password\": \"[ConvertToSecureString(String:variable('Plaintext.Solr.Key.Password'),AsPlainText:True,Force:True)]\",");
@@ -167,6 +183,10 @@ namespace SCIA
             file.WriteLine("    \"Register\":{");
             file.WriteLine("        \"Tasks\":{");
             file.WriteLine("            \"StartProcess\" : \"Start-Process\",");
+            if (txtSolrVersion.Text.Substring(0, 1) == "9")
+            {
+                file.WriteLine("            \"Expand7Zip\" : \"Expand-7Zip\",");
+            }
             file.WriteLine("            \"ExpandArchive\" : \"Expand-Archive\",");
             file.WriteLine("            \"AddContent\" : \"Add-Content\",");
             file.WriteLine("            \"RemoveItem\": \"Remove-Item\",");
@@ -231,15 +251,40 @@ namespace SCIA
             file.WriteLine("                \"DestinationPath\" : \"[variable('Solr.Download.Temp')]\"");
             file.WriteLine("            }");
             file.WriteLine("        },");
-            file.WriteLine("        \"UnpackSolr\" : {");
-            file.WriteLine("            \"Description\": \"Unpacks Solr.\",");
-            file.WriteLine("            \"Type\": \"ExpandArchive\",");
-            file.WriteLine("            \"Params\" : {");
-            file.WriteLine("                \"Path\" : \"[variable('Solr.Download.Temp')]\",");
-            file.WriteLine("                \"DestinationPath\" : \"[variable('Temp.Location')]\",");
-            file.WriteLine("                \"Force\": true");
-            file.WriteLine("            }");
-            file.WriteLine("        },");
+            if (txtSolrVersion.Text.Substring(0, 1) == "9")
+            {
+                file.WriteLine("        \"UnpackSolr\" : {");
+                file.WriteLine("            \"Description\": \"Unpacks Solr.\",");
+                file.WriteLine("            \"Type\": \"Expand7Zip\",");
+                file.WriteLine("            \"Params\" : {");
+                file.WriteLine("                \"ArchiveFileName\" : \"[variable('Solr.Download.Temp')]\",");
+                file.WriteLine("                \"TargetPath\" : \"[variable('Temp.Location')]\"");
+                file.WriteLine("            }");
+                file.WriteLine("        },");
+            }
+            else
+            {
+                file.WriteLine("        \"UnpackSolr\" : {");
+                file.WriteLine("            \"Description\": \"Unpacks Solr.\",");
+                file.WriteLine("            \"Type\": \"ExpandArchive\",");
+                file.WriteLine("            \"Params\" : {");
+                file.WriteLine("                \"Path\" : \"[variable('Solr.Download.Temp')]\",");
+                file.WriteLine("                \"DestinationPath\" : \"[variable('Temp.Location')]\",");
+                file.WriteLine("                \"Force\": true");
+                file.WriteLine("            }");
+                file.WriteLine("        },");
+            }
+            if (txtSolrVersion.Text.Substring(0, 1) == "9")
+            {
+                file.WriteLine("        \"UnpackSolrTar\" : {");
+                file.WriteLine("            \"Description\": \"Unpacks Solr Tar.\",");
+                file.WriteLine("            \"Type\": \"Expand7Zip\",");
+                file.WriteLine("            \"Params\" : {");
+                file.WriteLine("                \"ArchiveFileName\" : \"[JoinPath(variable('Temp.Location'),variable('Solr.Tar'))]\",");
+                file.WriteLine("                \"TargetPath\" : \"[variable('Temp.Location')]\"");
+                file.WriteLine("            }");
+                file.WriteLine("        },");
+            }
             file.WriteLine("        \"MoveSolr\": {");
             file.WriteLine("            \"Description\": \"Move Solr to working folder.\",");
             file.WriteLine("            \"Type\": \"MoveItem\",");
@@ -306,7 +351,7 @@ namespace SCIA
                 else
                     file.WriteLine("                    \"set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks\",");
             else
-                file.WriteLine("                    \"set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.p12\",");
+                file.WriteLine("                    \"set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks\",");
             file.WriteLine("                    \"set SOLR_SSL_KEY_STORE_PASSWORD=secret\",");
             if (compared >= 0)
                 if (txtSolrVersion.Text.Trim().StartsWith("8.10"))
@@ -314,7 +359,8 @@ namespace SCIA
                 else
                     file.WriteLine("                    \"set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks\",");
             else
-                file.WriteLine("                    \"set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.p12\",");
+                file.WriteLine("                    \"set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks\",");
+
             file.WriteLine("                    \"set SOLR_SSL_TRUST_STORE_PASSWORD=secret\",");
             file.WriteLine("                    \"[concat('set SOLR_HOST=\\\"',parameter('SolrDomain'),'\\\"')]\",");
             file.WriteLine("                    \"[concat('set SOLR_Port=',parameter('SolrPort'))]\"");

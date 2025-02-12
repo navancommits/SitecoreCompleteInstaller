@@ -54,6 +54,8 @@
             this.label4 = new System.Windows.Forms.Label();
             this.txtSolrRoot = new System.Windows.Forms.TextBox();
             this.toolTipSolrInstaller = new System.Windows.Forms.ToolTip(this.components);
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.txtSolrSrc = new System.Windows.Forms.TextBox();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.SuspendLayout();
@@ -161,6 +163,8 @@
             // panel3
             // 
             this.panel3.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.panel3.Controls.Add(this.linkLabel1);
+            this.panel3.Controls.Add(this.txtSolrSrc);
             this.panel3.Controls.Add(this.txtSolrVersion);
             this.panel3.Controls.Add(this.lnkJavaDownloadUrl);
             this.panel3.Controls.Add(this.txtJavaDownloadUrl);
@@ -179,7 +183,7 @@
             this.panel3.Controls.Add(this.label2);
             this.panel3.Location = new System.Drawing.Point(9, 28);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1053, 364);
+            this.panel3.Size = new System.Drawing.Size(1053, 395);
             this.panel3.TabIndex = 0;
             // 
             // lnkJavaDownloadUrl
@@ -310,6 +314,26 @@
             this.txtSolrRoot.TabIndex = 72;
             this.txtSolrRoot.Text = "c:\\solr";
             // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(15, 333);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(151, 25);
+            this.linkLabel1.TabIndex = 87;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "SolrSourceUrl:";
+            // 
+            // txtSolrSrc
+            // 
+            this.txtSolrSrc.Location = new System.Drawing.Point(209, 330);
+            this.txtSolrSrc.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
+            this.txtSolrSrc.MaxLength = 1000;
+            this.txtSolrSrc.Name = "txtSolrSrc";
+            this.txtSolrSrc.Size = new System.Drawing.Size(827, 31);
+            this.txtSolrSrc.TabIndex = 86;
+            this.txtSolrSrc.Text = "http://archive.apache.org/dist/lucene/solr";
+            // 
             // SolrInstaller
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
@@ -359,5 +383,7 @@
         private System.Windows.Forms.TextBox txtJavaDownloadUrl;
         private System.Windows.Forms.LinkLabel lnkJavaDownloadUrl;
         private System.Windows.Forms.ToolTip toolTipSolrInstaller;
+        private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.TextBox txtSolrSrc;
     }
 }
